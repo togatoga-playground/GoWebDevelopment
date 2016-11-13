@@ -31,7 +31,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var addr = flag.String("addr", ":8080", "アプリケーションのアドレス")
-	flag.Parse()
+	fClag.Parse()
 	gomniauth.SetSecurityKey("セキュリティキー")
 	gomniauth.WithProviders(
 		facebook.New()
