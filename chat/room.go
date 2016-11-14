@@ -1,31 +1,31 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"net/http"
-	"log"
 	"../trace"
+	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
+	"github.com/stretchr/objx"
 )
 
 type room struct {
-	forward chan []byte
+	forward chan *message
 
 	join  chan *client
 	leave chan *client
 
 	clients map[*client]bool
-	tracer trace.Tracer
+	tracer  trace.Tracer
 }
 
-func newRoom() *room{
+func newRoom() *room {
 	return &room{
-		forward:make(chan []byte),
-		join:make(chan *client),
-		leave:make(chan *client),
-		clients:make(map[*client]bool),
+		forward: make(chan *message),
+		join:    make(chan *client),
+		leave:   make(chan *client),
+		clients: make(map[*client]bool),
 	}
 }
-
 
 func (r *room) run() {
 	for {
@@ -38,7 +38,7 @@ func (r *room) run() {
 			close(client.send)
 			r.tracer.Trace("クライアントが退室しました")
 		case msg := <-r.forward:
-			r.tracer.Trace("メッセージを受信しました: ", string(msg))
+			r.tracer.Trace("メッセージを受信しました: ", msg.Message)
 			for client := range r.clients {
 				select {
 				case client.send <- msg:
@@ -61,20 +61,25 @@ const (
 
 var upgarder = &websocket.Upgrader{ReadBufferSize: socketBufferSize, WriteBufferSize: socketBufferSize}
 
-func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request){
-	socket,err := upgarder.Upgrade(w, req, nil)
-	if err != nil{
+func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	socket, err := upgarder.Upgrade(w, req, nil)
+	if err != nil {
 		log.Fatal("ServeHTTP", err)
+		return
+	}
+	authoCookie,err := req.Cookie("auth")
+	if err != nil{
+		log.Fatal("クッキーの取得に失敗しました。", err)
 		return
 	}
 	client := &client{
 		socket: socket,
-		send: make(chan []byte, messageBufferSize),
-		room: r,
+		send:   make(chan *message, messageBufferSize),
+		room:   r,
+		userData:objx.MustFromBase64(authoCookie.Value),
 	}
 	r.join <- client
-	defer func(){r.leave <- client}()
+	defer func() { r.leave <- client }()
 	go client.write()
 	client.read()
 }
-
