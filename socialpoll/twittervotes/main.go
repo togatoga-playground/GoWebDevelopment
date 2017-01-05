@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"github.com/bitly/go-nsq"
 )
 
 type poll struct {
@@ -66,6 +67,22 @@ func readFromTwitter(votes chan <- string) {
 		}
 	}
 }
+
+func publishVotes(votes <- chan string) <-chan struct{}{
+	stopchan := make(chan struct{}, 1)
+	pub, _ := nsq.NewProducer("localhost:4150", nsq.NewConfig())
+	go func(){
+		for vote := range votes{
+			pub.Publish("votes", []byte(vote))
+		}
+		log.Println("Publisher: 停止中です")
+		pub.Stop()
+		log.Println("Publisher: 停止しました")
+		stopchan <- struct{}{}
+	}()
+	return stopchan
+}
+
 
 func main() {
 

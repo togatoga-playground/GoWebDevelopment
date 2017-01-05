@@ -88,8 +88,7 @@ func makeRequest(req *http.Request, params url.Values) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 
-
-func startTwitterStream(stopchan <- chan struct{}, votes chan <- string) <- chan struct{}{
+func startTwitterStream(stopchan <- chan struct{}, votes chan <- string) <- chan struct{} {
 	stoppedchan := make(chan struct{}, 1)
 	go func() {
 		defer func() {
