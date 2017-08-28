@@ -9,7 +9,6 @@ import (
 	"mycode/trace"
 	"os"
 	"github.com/stretchr/gomniauth"
-	"github.com/stretchr/gomniauth/providers/google"
 	"io/ioutil"
 	"encoding/json"
 	"fmt"
@@ -29,13 +28,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type authConfig struct {
-	service string `json:"service"`
-	clientId string `json:"client_id"`
-	secret string `json:"secret"`
+	Service  string `json:"service"`
+	ClientId string `json:"client_id"`
+	Secret   string `json:"secret"`
 }
 
-
-func getAuthConfigs() []authConfig {
+func getAuthConfigs() map[string]authConfig {
 	bytes, err := ioutil.ReadFile("config/auth.json")
 	if err != nil {
 		log.Fatal(err)
@@ -44,10 +42,12 @@ func getAuthConfigs() []authConfig {
 	if err := json.Unmarshal(bytes, &authConfigs); err != nil {
 		log.Fatal(err)
 	}
-	return authConfigs
+	res := map[string]authConfig{}
+	for _, v := range authConfigs {
+		res[v.Service] = v
+	}
+	return res
 }
-
-
 
 func main() {
 	r := newRoom()
@@ -55,10 +55,9 @@ func main() {
 	authConfigs := getAuthConfigs()
 	fmt.Println(authConfigs)
 	gomniauth.SetSecurityKey("togatogatogatogatogatoga")
-	
 
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
-	http.Handle("/login", &templateHandler{filename:"login.html"})
+	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
 	go r.run()
