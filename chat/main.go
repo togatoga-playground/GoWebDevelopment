@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/gomniauth/providers/google"
 )
 
 type templateHandler struct {
@@ -53,9 +54,10 @@ func main() {
 	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
 	authConfigs := getAuthConfigs()
-	fmt.Println(authConfigs)
 	gomniauth.SetSecurityKey("togatogatogatogatogatoga")
-
+	gomniauth.WithProviders(
+		google.New(authConfigs["google"].ClientId, authConfigs["google"].Secret, "http://localhost:8080/auth/callback/google"),
+	)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
