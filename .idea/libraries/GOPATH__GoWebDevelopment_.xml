@@ -8,7 +8,6 @@
       <root url="file://$USER_HOME$/.go/src/golang.org" />
       <root url="file://$USER_HOME$/.go/src/labix.org" />
     </CLASSES>
-    <JAVADOC />
     <SOURCES>
       <root url="file://$USER_HOME$/.go/src/sourcegraph.com" />
       <root url="file://$USER_HOME$/.go/src/gopkg.in" />

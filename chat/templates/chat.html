@@ -9,10 +9,6 @@
         ul {
             list-style: none;
         }
-
-        div {
-            border: 1px solid red;
-        }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"
@@ -26,6 +22,7 @@
             <ul id="messages"></ul>
             <p>WebSocketを使ったチャットアプリケーション</p>
             <form id="chatbox">
+                {{.UserData.name}}:<br/>
                 <textarea class="form-control"></textarea>
                 <input type="submit" class="btn btn-primary" value="Send"/>
             </form>
@@ -45,7 +42,7 @@
                 alert("Error!!: WebSocket接続が行われていません");
                 return false;
             }
-            socket.send(msgBox.val());
+            socket.send(JSON.stringify({"Message":msgBox.val()}));
             msgBox.val("");
             return false;
         });
@@ -57,7 +54,16 @@
                 alert("接続が終了しました");
             }
             socket.onmessage = function (e) {
-                messages.append($("<li>").text(e.data));
+                var msg = eval("("+e.data+")");
+                var when = new Date(msg.When).toLocaleTimeString();
+
+                messages.append(
+                    $("<li>").append(
+                        $("<strong>").text(when + " "),
+                        $("<strong>").text(msg.Name + ": "),
+                        $("<span>").text(msg.Message)
+                    )
+                )
             }
         }
 
