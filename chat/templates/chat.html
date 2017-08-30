@@ -25,6 +25,7 @@
                 {{.UserData.name}}:<br/>
                 <textarea class="form-control"></textarea>
                 <input type="submit" class="btn btn-primary" value="Send"/>
+                <a href="/logout">サインアウト</a>
             </form>
         </div>
     </div>
@@ -59,7 +60,12 @@
 
                 messages.append(
                     $("<li>").append(
+
                         $("<strong>").text(when + " "),
+                        $("<img>").css({
+                            width:50,
+                            vertivalAlign:"middle"
+                        }).attr("src", msg.AvaterURL),
                         $("<strong>").text(msg.Name + ": "),
                         $("<span>").text(msg.Message)
                     )
