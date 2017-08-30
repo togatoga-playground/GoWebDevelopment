@@ -2,12 +2,16 @@
 <head>
     <title>チャット</title>
     <style>
-        input {
-            display: block;
+        ul#messages {
+            list-style: none;
         }
 
-        ul {
-            list-style: none;
+        ul#messages li {
+            margin-bottom: 2px;
+        }
+
+        ul#messages li img {
+            margin-right: 10px;
         }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -17,18 +21,20 @@
 <body>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-6 col-md-offset-3">
+    <div class="panel panel-default">
+        <div class="panel-body">
             <ul id="messages"></ul>
-            <p>WebSocketを使ったチャットアプリケーション</p>
-            <form id="chatbox">
-                {{.UserData.name}}:<br/>
-                <textarea class="form-control"></textarea>
-                <input type="submit" class="btn btn-primary" value="Send"/>
-                <a href="/logout">サインアウト</a>
-            </form>
         </div>
     </div>
+    <p>WebSocketを使ったチャットアプリケーション</p>
+    <form id="chatbox" role="form">
+        <div class="form-group">
+            <label for="messages">{{.UserData.name}}からメッセージを送信</label>
+            <textarea class="form-control"></textarea>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Send"/>
+        <a href="/logout">サインアウト</a>
+    </form>
 </div>
 </body>
 <script>
@@ -38,12 +44,12 @@
 
         var messages = $("#messages");
         $('#chatbox').submit(function () {
-            if (!msgBox.val())return false;
+            if (!msgBox.val()) return false;
             if (!socket) {
                 alert("Error!!: WebSocket接続が行われていません");
                 return false;
             }
-            socket.send(JSON.stringify({"Message":msgBox.val()}));
+            socket.send(JSON.stringify({"Message": msgBox.val()}));
             msgBox.val("");
             return false;
         });
@@ -55,16 +61,15 @@
                 alert("接続が終了しました");
             }
             socket.onmessage = function (e) {
-                var msg = eval("("+e.data+")");
+                var msg = eval("(" + e.data + ")");
                 var when = new Date(msg.When).toLocaleTimeString();
 
                 messages.append(
                     $("<li>").append(
-
                         $("<strong>").text(when + " "),
-                        $("<img>").css({
-                            width:50,
-                            vertivalAlign:"middle"
+                        $("<img>").attr("title", msg.Name).css({
+                            width: 50,
+                            vertivalAlign: "middle"
                         }).attr("src", msg.AvaterURL),
                         $("<strong>").text(msg.Name + ": "),
                         $("<span>").text(msg.Message)
