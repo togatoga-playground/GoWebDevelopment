@@ -80,6 +80,8 @@ func main() {
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	http.HandleFunc("/uploader", uploaderHandler)
+
 	go r.run()
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
