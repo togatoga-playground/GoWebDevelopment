@@ -58,7 +58,7 @@ func getAuthConfigs() map[string]authConfig {
 }
 
 func main() {
-	r := newRoom(UseAuthAvatar)
+	r := newRoom(UseFileSystemAvatar)
 	r.tracer = trace.New(os.Stdout)
 	authConfigs := getAuthConfigs()
 	gomniauth.SetSecurityKey("togatogatogatogatogatoga")
