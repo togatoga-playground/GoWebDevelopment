@@ -29,5 +29,5 @@ _testmain.go
 *.csv
 
 
-*.idea/*
+*/*.idea/*
 *.json
