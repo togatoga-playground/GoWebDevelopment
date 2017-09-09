@@ -8,12 +8,21 @@ import (
 	"strings"
 	"unicode"
 	"fmt"
+	"flag"
 )
 
 var tlds = []string{"com", "net"}
 const allowedChars = "abcdefghijklmnopqrstuvwxyz0123456789_-"
 
+var tld *string
+
+func init() {
+	tld = flag.String("tld", "com", "tld(ex com, net jp)")
+	flag.Parse()
+}
 func main() {
+
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
@@ -28,7 +37,7 @@ func main() {
 			}
 			newText = append(newText, r)
 		}
-		fmt.Println(string(newText) + "." + tlds[rand.Intn(len(tlds))])
+		fmt.Println(string(newText) + "." + *tld)
 	}
 
 }
