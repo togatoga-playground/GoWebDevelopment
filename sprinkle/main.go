@@ -9,12 +9,13 @@ import (
 	"strings"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 )
 
 const otherWorld = "*"
 
 func readTransforms() []string {
-	b, err := ioutil.ReadFile("config/transforms.conf")
+	b, err := ioutil.ReadFile(filepath.Dir(os.Args[0]) + "/config/transforms.conf")
 	if err != nil {
 		log.Fatal(err)
 	}
