@@ -7,6 +7,10 @@ import (
 	"github.com/matryer/go-oauth/oauth"
 	"github.com/joeshaw/envdecode"
 	"log"
+	"sync"
+	"net/http"
+	"net/url"
+	"strconv"
 )
 
 var conn net.Conn
@@ -63,3 +67,27 @@ func setupTwitterAuth() {
 		},
 	}
 }
+
+var (
+	authSetupOnce sync.Once
+	httpClient *http.Client
+)
+
+func makeRequest(req *http.Request, params url.Values) (*http.Response, error) {
+	authSetupOnce.Do(func() {
+		setupTwitterAuth()
+		httpClient = &http.Client{
+			Transport:&http.Transport{
+				Dial:dial,
+			},
+		}
+	})
+	formEnc := params.Encode()
+	req.Header.Set("Content-Type", "application/x-www-from-urlencoded")
+	req.Header.Set("Content-Length", strconv.Itoa(len(formEnc)))
+	req.Header.Set("Authorization",authClient.AuthorizationHeader(creds, "POST",req.URL, params))
+
+	return httpClient.Do(req)
+}
+
+
