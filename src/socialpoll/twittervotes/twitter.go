@@ -96,7 +96,7 @@ type tweet struct {
 	Text string
 }
 
-func readFromTwitter(votes chan<- string)  {
+func readFromTwitter(votes chan<- string) {
 	options, err := loadOptions()
 	if err != nil {
 		log.Println("選択肢の読み込みに失敗しました:", err)
@@ -137,4 +137,24 @@ func readFromTwitter(votes chan<- string)  {
 
 }
 
-
+func startTwitterStream(stopchan <-chan struct{}, votes chan<- string) <-chan struct{} {
+	stoppedchan := make(chan struct{}, 1)
+	go func() {
+		defer func() {
+			stoppedchan <- struct {}{}
+		}()
+		for {
+			select {
+			case <- stopchan:
+				log.Println("Twitterへの問い合わせを終了します...")
+				return
+			default:
+				log.Println("Twitterに問い合わせます...")
+				readFromTwitter(votes)
+				log.Println("(待機中)")
+				time.Sleep(10 * time.Second)
+			}
+		}
+	}()
+	return stoppedchan
+}
