@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"encoding/json"
+	"io/ioutil"
+	"fmt"
 )
 
 var conn net.Conn
@@ -49,11 +51,12 @@ var (
 
 func setupTwitterAuth() {
 	var ts struct {
-		ConsumerKey    string `env:"SP_TWITTER_KEY",required`
-		ConsumerSecret string `env:"SP_TWITTER_SECRET",required`
-		AccessToken    string `env:"SP_TWITTER_ACCESSTOKEN",required`
-		AccessSecret   string `env:"SP_TWITTER_ACCESSSECRET",required`
+		ConsumerKey    string `env:"SP_TWITTER_KEY,required"`
+		ConsumerSecret string `env:"SP_TWITTER_SECRET,required"`
+		AccessToken    string `env:"SP_TWITTER_ACCESSTOKEN,required"`
+		AccessSecret   string `env:"SP_TWITTER_ACCESSSECRET,required"`
 	}
+
 	if err := envdecode.Decode(&ts); err != nil {
 		log.Fatalln(err)
 	}
@@ -121,12 +124,20 @@ func readFromTwitter(votes chan<- string) {
 		return
 	}
 	reader = resp.Body
+	//debug
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		log.Println("Bodyの読み込みに失敗しました:", err)
+	}
+	fmt.Println(string(b))
 	decoder := json.NewDecoder(reader)
 	for {
 		var tweet tweet
 		if err := decoder.Decode(&tweet); err != nil {
+			log.Println("Tweetのデコードに失敗しました:", err)
 			break
 		}
+		log.Println("text = ", tweet.Text)
 		for _, option := range options {
 			if strings.Contains(strings.ToLower(tweet.Text), strings.ToLower(option)) {
 				log.Println("投票:", option)
