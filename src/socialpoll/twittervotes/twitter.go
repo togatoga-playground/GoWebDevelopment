@@ -13,8 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"encoding/json"
-	"io/ioutil"
-	"fmt"
+	"bufio"
 )
 
 var conn net.Conn
@@ -88,7 +87,7 @@ func makeRequest(req *http.Request, params url.Values) (*http.Response, error) {
 		}
 	})
 	formEnc := params.Encode()
-	req.Header.Set("Content-Type", "application/x-www-from-urlencoded")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Content-Length", strconv.Itoa(len(formEnc)))
 	req.Header.Set("Authorization", authClient.AuthorizationHeader(creds, "POST", req.URL, params))
 
@@ -123,13 +122,14 @@ func readFromTwitter(votes chan<- string) {
 		log.Println("検索のリクエストの作成に失敗しました:", err)
 		return
 	}
-	reader = resp.Body
-	//debug
-	b, err := ioutil.ReadAll(reader)
-	if err != nil {
-		log.Println("Bodyの読み込みに失敗しました:", err)
+	if resp.StatusCode != http.StatusOK {
+		s := bufio.NewScanner(resp.Body)
+		s.Scan()
+		log.Println(s.Text())
+		log.Println("StatusCode = ", resp.StatusCode)
+		return
 	}
-	fmt.Println(string(b))
+	reader = resp.Body
 	decoder := json.NewDecoder(reader)
 	for {
 		var tweet tweet
@@ -137,7 +137,7 @@ func readFromTwitter(votes chan<- string) {
 			log.Println("Tweetのデコードに失敗しました:", err)
 			break
 		}
-		log.Println("text = ", tweet.Text)
+
 		for _, option := range options {
 			if strings.Contains(strings.ToLower(tweet.Text), strings.ToLower(option)) {
 				log.Println("投票:", option)
@@ -152,11 +152,11 @@ func startTwitterStream(stopchan <-chan struct{}, votes chan<- string) <-chan st
 	stoppedchan := make(chan struct{}, 1)
 	go func() {
 		defer func() {
-			stoppedchan <- struct {}{}
+			stoppedchan <- struct{}{}
 		}()
 		for {
 			select {
-			case <- stopchan:
+			case <-stopchan:
 				log.Println("Twitterへの問い合わせを終了します...")
 				return
 			default:
