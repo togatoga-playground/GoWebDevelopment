@@ -3,16 +3,17 @@ package main
 import (
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"errors"
 )
 
 type poll struct {
-	ID bson.ObjectId `bson:"_id" json:"id"`
-	Title string `json:"title"`
+	ID      bson.ObjectId `bson:"_id" json:"id"`
+	Title   string `json:"title"`
 	Options []string `json:"options"`
 	Results map[string]int `json:"results,omitempty"`
 }
 
-func handlePolls(w http.ResponseWriter, r *http.Request)  {
+func handlePolls(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		handlePollsGet(w, r)
@@ -24,5 +25,9 @@ func handlePolls(w http.ResponseWriter, r *http.Request)  {
 		handlePollsDelete(w, r)
 		return
 	}
-	respondErr(w, r , http.StatusNotFound)
+	respondErr(w, r, http.StatusNotFound)
+}
+
+func handlePollsGet(w http.ResponseWriter, r *http.Request) {
+	respondErr(w, r, http.StatusInternalServerError, errors.New("未実装です"))
 }
