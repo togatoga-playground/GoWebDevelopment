@@ -9,17 +9,23 @@ import (
 	"sync"
 	"github.com/bitly/go-nsq"
 	"time"
+	"gopkg.in/mgo.v2/bson"
+	"os/signal"
+	"syscall"
 )
 
 var fatalErr error
 
-func fatal(e error)  {
+func fatal(e error) {
 	fmt.Println(e)
 	flag.PrintDefaults()
 	fatalErr = e
 }
+
 var countsLock sync.Mutex
 var counts map[string]int
+
+const updateDuration = 1 * time.Second
 
 func main() {
 	defer func() {
@@ -46,7 +52,7 @@ func main() {
 		fatal(err)
 		return
 	}
-	q.AddHandler(nsq.HandlerFunc(func(m *nsq.Message) error{
+	q.AddHandler(nsq.HandlerFunc(func(m *nsq.Message) error {
 		countsLock.Lock()
 		defer countsLock.Unlock()
 		if counts == nil {
@@ -61,6 +67,46 @@ func main() {
 		return
 	}
 
+	log.Println("NSQ上での投票を待機します...")
+	var updater *time.Timer
+	updater = time.AfterFunc(updateDuration, func() {
+		countsLock.Lock()
+		defer countsLock.Unlock()
+		if len(counts) == 0 {
+			log.Println("新しい投票はありません。データベースの更新をスキップします")
+		} else {
+			log.Println("データベースを更新します...")
+			log.Println(counts)
+			ok := true
+			for option, count := range counts {
+				sel := bson.M{"options": bson.M{"$in": []string{option}}}
+				up := bson.M{"$inc": bson.M{"results." + option: count}}
+				if _, err := pollData.UpdateAll(sel, up); err != nil {
+					log.Println("更新に失敗しました:", err)
+					ok = false
+					continue
+				}
+				counts[option] = 0
+			}
+			if ok {
+				log.Println("データベースの更新が完了しました")
+				counts = nil
+			}
+		}
+		updater.Reset(updateDuration)
+	})
 
+	termChan := make(chan os.Signal, 1)
+	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	for {
+		select {
+		case <-termChan:
+			updater.Stop()
+			q.Stop()
+		case <-q.StopChan:
+			//
+			return
+		}
+	}
 
 }
