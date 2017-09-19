@@ -6,7 +6,6 @@ import (
 	"flag"
 	"log"
 	"time"
-	"github.com/stretchr/graceful"
 	graceful2 "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -51,7 +50,7 @@ func withCORS(fn http.HandlerFunc, ) http.HandlerFunc {
 
 func main() {
 	var (
-		addr = flag.String("addr", ":8080", "エンドポイントのアドレス")
+		addr  = flag.String("addr", ":8080", "エンドポイントのアドレス")
 		mongo = flag.String("mongo", "localhost", "MongoDBのアドレス")
 	)
 	flag.Parse()
@@ -64,7 +63,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/polls/", withCORS(withVars(withData(db, withAPIKey(handlePolls)))))
 	log.Println("Webサーバーを開始します:", *addr)
-	graceful2.Run(*addr, 1 * time.Second, mux)
+	graceful2.Run(*addr, 1*time.Second, mux)
 	log.Println("停止します...")
 
 }
