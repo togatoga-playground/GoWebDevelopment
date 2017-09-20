@@ -19,7 +19,7 @@
     </div>
     <div class="col-md-4"></div>
   </div>
-  <script src="https://www.google.com/jsapi?key"></script>
+  <script src="https://www.google.com/jsapi"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script>
@@ -39,7 +39,8 @@
               for (var o in poll.results) {
                 $("#options").append(
                   $("<li>").append(
-                    $("<small>").addCLass("label label-default").text(poll.result[o]), " ", o
+                    $("<small>").addClass("label label-default").text(poll.results[o]),
+                    " ", o
                   )
                 )
               }
@@ -51,7 +52,7 @@
                   data.addRow([o, poll.results[o]])
                 }
                 if (!chart) {
-                  chart = new google.visualization.PieChart(document.getElementByID('chart'));
+                  chart = new google.visualization.PieChart(document.getElementById('chart'));
                 }
                 chart.draw(data, {
                   is3D: true
@@ -64,7 +65,7 @@
         $("#delete").click(function() {
           if (confirm("本当に削除しますか?")) {
             $.ajax({
-              url: "http://localhost:8080" + poll + "?key=abc123",
+              url: "http://localhost:8080/" + poll + "?key=abc123",
               type: "DELETE"
             }).done(function() {
               location.href = "/";
@@ -75,4 +76,5 @@
     });
   </script>
 </body>
+
 </html>

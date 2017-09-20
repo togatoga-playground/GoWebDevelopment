@@ -46,7 +46,7 @@
             $.post("http://localhost:8080/polls/?key=abc123", JSON.stringify({
                 title: title,
                 options: options
-              }).done(function(d, s, r) {
+              })).done(function(d, s, r) {
                 location.href = "view.html?poll=" + r.getResponseHeader("Location");
               });
             });
