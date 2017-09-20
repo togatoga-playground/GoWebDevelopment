@@ -28,8 +28,8 @@ func main() {
 	}()
 	var (
 		interval = flag.Int("interval", 10, "チェックの間隔(秒単位)")
-		archive = flag.String("archive", "archive", "アーカイブの保存先")
-		dbpath = flag.String("db", "./db", "fileDBデータベースのパス")
+		archive  = flag.String("archive", "archive", "アーカイブの保存先")
+		dbpath   = flag.String("db", "./db", "fileDBデータベースのパス")
 	)
 	flag.Parse()
 	db, err := filedb.Dial(*dbpath)
@@ -45,9 +45,9 @@ func main() {
 	}
 
 	m := &backup.Monitor{
-		Destination:*archive,
-		Archiver:backup.ZIP,
-		Paths:make(map[string]string),
+		Destination: *archive,
+		Archiver:    backup.ZIP,
+		Paths:       make(map[string]string),
 	}
 	var path path
 	col.ForEach(func(_ int, data []byte) bool {
@@ -71,12 +71,12 @@ func main() {
 	check(m, col)
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-	Loop:
+Loop:
 	for {
 		select {
-		case <- time.After(time.Duration(*interval) * time.Second):
+		case <-time.After(time.Duration(*interval) * time.Second):
 			check(m, col)
-		case <- signalChan:
+		case <-signalChan:
 			fmt.Println()
 			log.Printf("終了します...")
 			break Loop
@@ -85,7 +85,7 @@ func main() {
 
 }
 
-func check(m *backup.Monitor, col *filedb.C)  {
+func check(m *backup.Monitor, col *filedb.C) {
 	log.Println("チェックします...")
 	counter, err := m.Now()
 	if err != nil {
@@ -97,14 +97,14 @@ func check(m *backup.Monitor, col *filedb.C)  {
 		var path path
 		col.SelectEach(func(_ int, data []byte) (bool, []byte, bool) {
 			if err := json.Unmarshal(data, &path); err != nil {
-				log.Println("JSONデータの読み込みに失敗しました。" + "次の項目に進みます:", err)
+				log.Println("JSONデータの読み込みに失敗しました。"+"次の項目に進みます:", err)
 				return true, data, false
 			}
 
 			path.Hash, _ = m.Paths[path.Path]
 			newdata, err := json.Marshal(&path)
 			if err != nil {
-				log.Println("JSONデータの書き出しに失敗しました。" + "次の項目に進みます:", err)
+				log.Println("JSONデータの書き出しに失敗しました。"+"次の項目に進みます:", err)
 				return true, data, false
 			}
 			return true, newdata, false
@@ -113,8 +113,3 @@ func check(m *backup.Monitor, col *filedb.C)  {
 		log.Println("変更はありません")
 	}
 }
-
-
-
-
-
