@@ -18,7 +18,7 @@ type zipper struct {}
 var ZIP Archiver = (*zipper)(nil)
 
 func (z *zipper) Archive(src, dest string) error {
-	if err := os.Mkdir(filepath.Dir(dest), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dest), 0777); err != nil {
 		return err
 	}
 	out, err := os.Create(dest)

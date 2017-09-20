@@ -16,7 +16,7 @@ func (m *Monitor) Now() (int, error) {
 	for path, lastHash := range m.Paths {
 		newHash, err := DirHash(path)
 		if err != nil {
-			return 0, nil
+			return 0, err
 		}
 
 		if newHash != lastHash {
