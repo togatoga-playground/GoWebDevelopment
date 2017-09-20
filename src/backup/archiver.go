@@ -5,9 +5,11 @@ import (
 	"path/filepath"
 	"archive/zip"
 	"io"
+	"fmt"
 )
 
 type Archiver interface {
+	DestFmt() func(int64) string
 	Archive(src, dest string) error
 }
 
@@ -51,3 +53,8 @@ func (z *zipper) Archive(src, dest string) error {
 	})
 }
 
+func (z *zipper) DestFmt() func(int64) string {
+	return func(i int64) string {
+		return fmt.Sprintf("%d.zip", i)
+	}
+}
