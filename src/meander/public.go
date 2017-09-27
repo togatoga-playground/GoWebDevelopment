@@ -4,7 +4,7 @@ type Facade interface {
 	Public() interface{}
 }
 
-func Pulibc(o interface{}) interface {} {
+func Public(o interface{}) interface {} {
 	if p, ok := o.(Facade); ok {
 		return p.Public()
 	}
