@@ -1,10 +1,10 @@
 package main
 
 import (
-	"runtime"
-	"net/http"
 	"encoding/json"
 	"meander"
+	"net/http"
+	"runtime"
 )
 
 func main() {
@@ -18,8 +18,8 @@ func main() {
 func respond(w http.ResponseWriter, r *http.Request, data []interface{}) error {
 	publicData := make([]interface{}, len(data))
 	for i, d := range data {
-		publicData[i] = meander.Pulibc(d)
+		publicData[i] = meander.Public(d)
 	}
 	return json.NewEncoder(w).Encode(publicData)
-	
+
 }
